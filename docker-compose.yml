@@ -1,0 +1,28 @@
+services:
+  db:
+    image: postgres:15
+    container_name: cloud_postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: cloud_db
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  backend:
+    build:
+      context: .
+    container_name: cloud_backend
+    depends_on:
+      - db
+    environment:
+      DATABASE_URL: postgres://postgres:password@db:5432/cloud_db
+      RUST_LOG: debug
+    ports:
+      - "3000:3000"
+    command: ["sh", "-c", "cargo install sqlx-cli --no-default-features --features postgres && cargo run"]
+
+volumes:
+  db_data:
